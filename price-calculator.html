@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор выгоды</title>
+    <style>
+        /* Глобальные стили для приятного вида */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        /* Контейнер всего приложения */
+        .app-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        /* Заголовок */
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px 25px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        /* Форма для добавления продуктов */
+        #product-form {
+            padding: 25px;
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 2 колонки */
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Группа "Название" занимает всю ширину */
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"] {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box; /* Важно для правильных размеров */
+            width: 100%;
+        }
+        
+        /* Стили для инпутов при фокусе */
+        .form-group input[type="text"]:focus,
+        .form-group input[type="number"]:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+            outline: none;
+        }
+
+        /* Кнопка */
+        #add-button {
+            grid-column: 1 / -1; /* Занимает всю ширину */
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        #add-button:hover {
+            background-color: #218838;
+        }
+
+        #add-button:active {
+             transform: scale(0.98);
+        }
+
+        /* Список продуктов */
+        #product-list {
+            padding: 0 25px 25px 25px;
+            margin: 0;
+            list-style-type: none; /* Убираем маркеры списка */
+        }
+
+        /* Отдельный элемент списка */
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-top: 15px;
+            background-color: #fdfdfd;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        /* СТИЛЬ ДЛЯ САМОГО ВЫГОДНОГО! */
+        .product-item.best-deal {
+            background-color: #e6f7ec;
+            border-color: #28a745;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
+        }
+
+        .product-item .info {
+            flex-grow: 1;
+            /* Убедимся, что текст переносится, если он слишком длинный */
+            overflow: hidden;
+            word-break: break-word;
+            margin-right: 10px;
+        }
+
+        .product-item .info .name {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .product-item .info .details {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .product-item .price-per-kg {
+            text-align: right;
+            margin-left: 15px;
+            flex-shrink: 0; /* Запрещаем блоку сжиматься */
+        }
+
+        .product-item .price-per-kg .price {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #007bff;
+        }
+        
+        .product-item.best-deal .price-per-kg .price {
+            color: #218838;
+        }
+
+        .product-item .price-per-kg .unit {
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        /* Кнопка удаления */
+        .delete-btn {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 15px;
+            transition: background-color 0.2s, transform 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0; /* Запрещаем кнопке сжиматься */
+            padding-bottom: 2px; /* Для центрирования '×' */
+            line-height: 1;
+        }
+        
+        .delete-btn:hover {
+            background: #e03c3c;
+        }
+
+        .delete-btn:active {
+            transform: scale(0.9);
+        }
+        
+        /* Сообщение, если список пуст */
+        #empty-message {
+            text-align: center;
+            padding: 30px;
+            color: #888;
+            display: none; /* По умолчанию скрыто */
+        }
+        
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .app-container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            #product-form {
+                /* На мобильных делаем все поля в одну колонку */
+                grid-template-columns: 1fr;
+            }
+            
+            /* Возвращаем ширину по умолчанию для всех групп */
+            .form-group.full-width {
+                grid-column: auto;
+            }
+            
+            #add-button {
+                grid-column: auto;
+            }
+            
+            header {
+                padding: 15px 20px;
+            }
+            
+            #product-form, #product-list {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+            
+            .product-item {
+                /* На маленьких экранах цена может уйти под описание */
+                flex-wrap: wrap;
+            }
+            
+            .product-item .info {
+                /* Занимает почти всю ширину, оставляя место для кнопки */
+                flex-basis: calc(100% - 40px);
+                margin-right: 0;
+            }
+            
+            .product-item .price-per-kg {
+                flex-basis: 100%;
+                text-align: left;
+                margin-left: 0;
+                margin-top: 10px;
+            }
+            
+            .delete-btn {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <h1>🍎 Калькулятор выгоды</h1>
+        </header>
+
+        <!-- Форма для добавления -->
+        <form id="product-form">
+            <div class="form-group full-width">
+                <label for="product-name">Название продукта</label>
+                <input type="text" id="product-name" placeholder="Например, 'Молоко Простоквашино'" required>
+            </div>
+
+            <div class="form-group">
+                <label for="product-price">Цена (руб.)</label>
+                <input type="number" id="product-price" placeholder="100" min="0.01" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="product-weight">Вес (граммы)</label>
+                <input type="number" id="product-weight" placeholder="900" min="1" required>
+            </div>
+
+            <button type="submit" id="add-button">Добавить продукт</button>
+        </form>
+
+        <!-- Список продуктов -->
+        <ul id="product-list">
+            <!-- Продукты будут добавляться сюда с помощью JavaScript -->
+        </ul>
+        
+        <!-- Сообщение для пустого списка -->
+        <div id="empty-message">
+            <p>Добавьте свой первый продукт, чтобы начать сравнение!</p>
+        </div>
+    </div>
+
+    <script>
+        // --- Логика приложения (JavaScript) ---
+
+        // Находим основные элементы на странице
+        const productForm = document.getElementById('product-form');
+        const productNameInput = document.getElementById('product-name');
+        const productPriceInput = document.getElementById('product-price');
+        const productWeightInput = document.getElementById('product-weight');
+        const productList = document.getElementById('product-list');
+        const emptyMessage = document.getElementById('empty-message');
+
+        // Массив для хранения всех наших продуктов
+        let products = [];
+
+        // --- 1. Обработчик отправки формы ---
+        productForm.addEventListener('submit', function(event) {
+            // Отменяем стандартное поведение формы (перезагрузку страницы)
+            event.preventDefault();
+
+            // Получаем значения из полей
+            const name = productNameInput.value.trim(); // Убираем лишние пробелы
+            const price = parseFloat(productPriceInput.value);
+            const weight = parseFloat(productWeightInput.value);
+
+            // Простая проверка
+            if (name && price > 0 && weight > 0) {
+                // Рассчитываем цену за 1 грамм
+                const pricePerGram = price / weight;
+
+                // Создаем объект продукта
+                const newProduct = {
+                    id: Date.now(), // Уникальный ID на основе времени
+                    name: name,
+                    price: price,
+                    weight: weight,
+                    pricePerGram: pricePerGram
+                };
+
+                // Добавляем продукт в наш массив
+                products.push(newProduct);
+
+                // Очищаем поля формы
+                productForm.reset();
+                productNameInput.focus(); // Фокус на первое поле для удобства
+
+                // Обновляем отображение списка
+                renderProducts();
+            } else {
+                // Вместо alert() можно сделать более мягкое уведомление,
+                // но для простоты оставим alert.
+                // В реальном приложении здесь была бы красивая плашка.
+                // alert("Пожалуйста, заполните все поля корректно.");
+                console.warn("Попытка добавить продукт с некорректными данными.");
+                // Можно подсветить незаполненные поля
+                if (!name) productNameInput.focus();
+                else if (!price) productPriceInput.focus();
+                else if (!weight) productWeightInput.focus();
+            }
+        });
+
+        // --- 2. Функция отображения (рендеринга) списка ---
+        function renderProducts() {
+            // Очищаем старый список
+            productList.innerHTML = '';
+
+            // Проверяем, пуст ли массив
+            if (products.length === 0) {
+                emptyMessage.style.display = 'block';
+                return; // Выходим из функции
+            }
+            
+            emptyMessage.style.display = 'none';
+
+            // --- Находим самый выгодный продукт ---
+            let bestDeal = null; 
+            
+            if (products.length > 0) {
+                bestDeal = products[0]; // Начинаем с первого
+                products.forEach(product => {
+                    if (product.pricePerGram < bestDeal.pricePerGram) {
+                        bestDeal = product;
+                    }
+                });
+            }
+            // ------------------------------------
+
+            // Создаем HTML для каждого продукта
+            products.forEach(product => {
+                const item = document.createElement('li');
+                item.classList.add('product-item');
+                
+                // Если это лучший продукт и в списке больше одного товара
+                // (нет смысла выделять, если он один)
+                if (bestDeal && product.id === bestDeal.id && products.length > 1) {
+                    item.classList.add('best-deal');
+                }
+
+                // Рассчитываем цену за килограмм (1000 грамм) для удобства
+                const pricePerKg = (product.pricePerGram * 1000).toFixed(2);
+
+                // Функция для безопасного отображения HTML (предотвращает XSS)
+                const escapeHTML = (str) => str.replace(/[&<>"']/g, (match) => {
+                    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+                    return map[match];
+                });
+
+                // Формируем HTML-содержимое элемента
+                item.innerHTML = `
+                    <div class="info">
+                        <div class="name">${escapeHTML(product.name)}</div>
+                        <div class="details">${product.price} руб. / ${product.weight} г</div>
+                    </div>
+                    <div class="price-per-kg">
+                        <div class="price">${pricePerKg}</div>
+                        <div class="unit">руб/кг</div>
+                    </div>
+                    <button class="delete-btn" data-id="${product.id}" aria-label="Удалить продукт">×</button>
+                `;
+
+                // Добавляем созданный элемент в список на странице
+                productList.appendChild(item);
+            });
+        }
+
+        // --- 3. Обработчик удаления продукта ---
+        // Используем делегирование событий:
+        // Cлушаем клик на всем списке, но реагируем только на кнопку ".delete-btn"
+        productList.addEventListener('click', function(event) {
+            // Проверяем, что кликнули именно по кнопке удаления
+            const deleteButton = event.target.closest('.delete-btn');
+            if (deleteButton) {
+                // Получаем ID продукта, который хотим удалить
+                const idToDelete = parseInt(deleteButton.dataset.id);
+
+                // Создаем новый массив, отфильтровав (убрав) из него удаляемый продукт
+                products = products.filter(product => product.id !== idToDelete);
+
+                // Перерисовываем список
+                renderProducts();
+            }
+        });
+
+        // --- 4. Первый запуск ---
+        // При загрузке страницы один раз вызовем рендер,
+        // чтобы показать сообщение "Список пуст"
+        renderProducts();
+
+    </script>
+
+</body>
+</html>
