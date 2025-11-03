@@ -393,7 +393,7 @@
             </div>
 
             <div class="form-group">
-                <label for="product-price">Цена (руб.)</label>
+                <label for="product-price">Цена</label>
                 <input type="number" id="product-price" placeholder="100" min="0.01" step="0.01" required>
             </div>
 
@@ -538,11 +538,11 @@
                 item.innerHTML = `
                     <div class="info">
                         <div class="name">${escapeHTML(product.name)}</div>
-                        <div class="details">${product.price} руб. / ${product.weight} г</div>
+                        <div class="details">${product.price} / ${product.weight} г</div>
                     </div>
                     <div class="price-per-kg">
                         <div class="price">${pricePerKg}</div>
-                        <div class="unit">руб/кг</div>
+                        <div class="unit">цена/кг</div>
                     </div>
                     <button class="delete-btn" data-id="${product.id}" aria-label="Удалить продукт">×</button>
                 `;
@@ -567,5 +567,6 @@
 
 </body>
 </html>
+
 
 
